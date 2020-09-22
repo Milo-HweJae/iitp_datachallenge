@@ -2,9 +2,11 @@
 
 from util import dataframe_from_csvs
 from glob import glob
+from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
+import pandas as pd
 
-def CAR_preprocessing(DATA_PATH):
+def load_data(DATA_PATH):
     print('[+] Start preprocession')
     
     train_path = DATA_PATH + './학습용'
@@ -13,8 +15,8 @@ def CAR_preprocessing(DATA_PATH):
     train_drive = sorted([x for x in glob(train_path + "./*D_training*.csv")])
     train_stay = sorted([x for x in glob(train_path + "./*S_training*.csv")])
 
-    submit_drive = sorted([x for x in glob(submit_path + "./*D_pred*.csv")])
-    submit_stay = sorted([x for x in glob(submit_path + "./*S_pred*.csv")])
+    submit_drive = sorted([x for x in glob(submit_path + "./Cybersecurity_Car_Hacking_D_prediction.csv")])
+    submit_stay = sorted([x for x in glob(submit_path + "./Cybersecurity_Car_Hacking_S_prediction.csv")])
 
   
     print ('[+] Loading train dataset')
@@ -25,111 +27,64 @@ def CAR_preprocessing(DATA_PATH):
     submit_df_drive = dataframe_from_csvs(submit_drive)
     submit_df_stay = dataframe_from_csvs(submit_stay)
     
-    
+    # print(train_df_drive.index)
     # train_d_data, train_d_label
-    train_df_drive_ = train_df_drive.iloc[:,1:5]
+    # train_d_data.index = train_df_drive['index_col']
+    # train_d_data = train_d_data.replace('Normal', '0')
+    # train_d_data = train_d_data.replace('Attack', '1')
+    # train_d_data = train_d_data.apply(pd.to_numeric)
     
-    train_df_drive, train_d_label = split_target(train_df_drive_)
-    train_df_drive = np.asarray(train_df_drive)
+    train_d_data = train_df_drive.Arbitration_ID.apply(lambda x: int(x,16))
+    # train_d_data = train_d_data_temp
     
-    train_d_data = []
-    for i in range(len(train_df_drive)):
-        tmp = train_df_drive[i][2].split(" ")
-        
-        train_d_data.append(int(train_df_drive[i][0].encode("utf-8").hex())) 
-        train_d_data.append(train_df_drive[i][1])
-        number=''
-        for j in range(len(tmp)):
-            number = number + tmp[j].encode("utf-8").hex()
-        train_d_data.append(int(number))    
+    # train_s_data.index = train_df_stay['index_col']
+    # train_s_data = train_s_data.replace('Normal', '0')
+    # train_s_data = train_s_data.replace('Attack', '1')
+    # train_s_data = train_s_data.apply(pd.to_numeric)
     
-    train_d_label = np.asarray(train_d_label)
+    train_s_data = train_df_stay.Arbitration_ID.apply(lambda x: int(x,16))        
+    # train_s_data = train_s_data_temp
     
-    train_d_data = np.asarray(train_d_data)
-    train_d_data = train_d_data.reshape(-1,3)
-    train_d_data = train_d_data[::-1]
-    train_d_data = train_d_data.astype(np.float32)        
+    submit_d_data = submit_df_drive.Arbitration_ID.apply(lambda x: int(x,16))
     
-    # train_s_data, train_s_label
-    train_df_stay_ = train_df_stay.iloc[:,1:5]
+    submit_s_data = submit_df_stay.Arbitration_ID.apply(lambda x: int(x,16))
     
-    train_df_stay, train_s_label = split_target(train_df_stay_)
-    train_df_stay = np.asarray(train_df_stay)
+    return train_d_data[:1700000], train_s_data[:1700000], submit_d_data, submit_s_data
 
-    train_s_data = []
-    for i in range(len(train_df_stay)):
-        tmp = train_df_drive[i][2].split(" ")
-        
-        train_s_data.append(int(train_df_stay[i][0].encode("utf-8").hex())) 
-        train_s_data.append(train_df_stay[i][1])
-        number=''
-        for j in range(len(tmp)):
-            number = number + tmp[j].encode("utf-8").hex()
-        train_s_data.append(int(number))    
-    
-    train_s_label = np.asarray(train_s_label)
-    
-    train_s_data = np.asarray(train_s_data)
-    train_s_data = train_s_data.reshape(-1,3)
-    train_s_data = train_s_data[::-1]
-    train_s_data = train_s_data.astype(np.float32) 
-    
-    # submit_d_data
-    submit_df_drive = submit_df_drive.iloc[:,2:5]
-    
-    submit_df_drive = np.asarray(submit_df_drive)
-    
-    submit_d_data = []
-    for i in range(len(submit_df_drive)):
-        tmp = submit_df_drive[i][2].split(" ")
-        
-        submit_d_data.append(int(submit_df_drive[i][0].encode("utf-8").hex())) 
-        submit_d_data.append(submit_df_drive[i][1])
-        number=''
-        for j in range(len(tmp)):
-            number = number + tmp[j].encode("utf-8").hex()
-        submit_d_data.append(int(number))    
-    
-    submit_d_data = np.asarray(submit_d_data)
-    submit_d_data = submit_d_data.reshape(-1,3)
-    submit_d_data = submit_d_data[::-1]
-    submit_d_data = submit_d_data.astype(np.float32) 
-    
-    # submit_s_data
-    submit_df_stay = submit_df_stay.iloc[:,2:5]
-    
-    submit_df_stay = np.asarray(submit_df_stay)
-    
-    submit_s_data = []
-    for i in range(len(submit_df_stay)):
-        tmp = submit_df_stay[i][2].split(" ")
-        
-        submit_s_data.append(int(submit_df_stay[i][0].encode("utf-8").hex())) 
-        submit_s_data.append(submit_df_stay[i][1])
-        number=''
-        for j in range(len(tmp)):
-            number = number + tmp[j].encode("utf-8").hex()
-        submit_s_data.append(int(number))    
-    
-    submit_s_data = np.asarray(submit_s_data)
-    submit_s_data = submit_s_data.reshape(-1,3)
-    submit_s_data = submit_s_data[::-1]
-    submit_s_data = submit_s_data.astype(np.float32) 
+def preprocessing_data(dataset, start_index, end_index, history_size, target_size):
+    data = []
+    labels = []
+  
+    start_index = start_index + history_size
+    if end_index is None:
+      end_index = len(dataset) - target_size
+  
+    for i in range(start_index, end_index):
+      indices = list(range(i-history_size, i))
+      # Reshape data from (history_size,) to (history_size, 1)
+      data.append(np.reshape(dataset[indices], (history_size,)))
+      labels.append(dataset[i+target_size])
+    data = np.array(data)
+    labels = np.array(labels)
+    data = data.reshape(-1,1,history_size)
+    labels = labels.reshape(-1,1)
+    return data, labels
 
-    
-    return train_d_data, train_d_label, train_s_data, train_s_label, submit_d_data, submit_s_data
-
-def split_target(data):
-    label_tmp = data.iloc[1:, 3:]
-    data = data.iloc[1:, :3]
-    
-    label = []
-    for item in label_tmp.iterrows():
-        if item[1][0] == 'Normal':
-            label.append(0)
-        else:
-            label.append(1)
-            
-    label = np.asarray(label)
-    
-    return data, label
+def preprocessing_data_submit(dataset, start_index, end_index, history_size, target_size):
+    data = []
+    # labels = []
+  
+    start_index = start_index + history_size
+    if end_index is None:
+      end_index = len(dataset) - target_size
+  
+    for i in range(start_index, end_index):
+      indices = list(range(i-history_size, i))
+      # Reshape data from (history_size,) to (history_size, 1)
+      data.append(np.reshape(dataset[indices], (history_size,)))
+      # labels.append(dataset[i+target_size])
+    data = np.array(data)
+    # labels = np.array(labels)
+    data = data.reshape(-1,1,history_size)
+    # labels = labels.reshape(-1,1)
+    return data

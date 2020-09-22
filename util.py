@@ -6,39 +6,42 @@ from glob import glob
 
 import numpy as np
 import sklearn.metrics as metrics
-
+from sklearn.metrics import confusion_matrix
 
 def dataframe_from_csv(target):
     return pd.read_csv(target).rename(columns=lambda x: x.strip())
 
 
 def dataframe_from_csvs(targets):
-    return pd.concat([dataframe_from_csv(x) for x in targets])
+    # temp = pd.DataFrame(dataframe_from_csv)
+    return pd.concat([dataframe_from_csv(x) for x in targets], ignore_index='True')
 
 def number_to_class(predict, threshold):
     label = []
     for i in range(len(predict)):
-        if predict[i] < threshold:
+        if predict[i] >= threshold:
             label.append('Normal')
         else:
             label.append('Attack')
     
     return label
 
-def save_submission(DATA_PATH, pred, is_drive=True):
+def save_submission(DATA_PATH, pred, past_history, is_drive=True):
     
     submit_path = DATA_PATH + './제출용'
     
     if is_drive == True:
         submit_drive = sorted([x for x in glob(submit_path + "./*D_pred*.csv")])
         submit_df_drive = dataframe_from_csvs(submit_drive)
-        submit_df_drive['Class'] = pred
+        for i in range(past_history):
+            submit_df_drive['Class'] = pred.insert(0,'Normal')
         submit_df_drive.to_csv(submit_path + "./submission_d.csv")
     
     else:
         submit_stay = sorted([x for x in glob(submit_path + "./*S_pred*.csv")])
         submit_df_stay = dataframe_from_csvs(submit_stay)
-        submit_df_stay['Class'] = pred
+        for i in range(past_history):
+            submit_df_stay['Class'] = pred.insert(0,'Normal')
         submit_df_stay.to_csv(submit_path + "./submission_s.csv")
         
 def scoring(DATA_PATH):
@@ -66,6 +69,9 @@ def scoring(DATA_PATH):
     submit_drive = np.asarray(submit_df_drive['Class'])
     submit_stay = np.asarray(submit_df_stay['Class'])
     
+    # submit_drive = np.insert(submit_drive,0,np.zeros(100))
+    # submit_stay = np.insert(submit_stay,0,np.zeros(100))
+    
     for i in range(len(answer_drive)):
         if answer_drive[i] == 'Normal':
             answer_drive[i] = 0
@@ -79,13 +85,13 @@ def scoring(DATA_PATH):
             answer_stay[i] = 1
     
     for i in range(len(submit_drive)):
-        if submit_drive[i] == 'Normal':
+        if submit_drive[i] == 'Normal' or submit_drive[i] == 0:
             submit_drive[i] = 0
         else:
             submit_drive[i] = 1
     
     for i in range(len(submit_stay)):
-        if submit_stay[i] == 'Normal':
+        if submit_stay[i] == 'Normal' or submit_stay[i] == 0:
             submit_stay[i] = 0
         else:
             submit_stay[i] = 1            
@@ -110,6 +116,14 @@ def scoring(DATA_PATH):
     print('f1 : ', metrics.f1_score(answer_stay, submit_stay))  
     print('\n')
     
+    y_pred = submit_drive
+    y_true = answer_drive
+    tn, fp, fn,tp = confusion_matrix(y_pred,y_true).ravel()
+    print(tp,tn,fn,fp)
+    y_pred = submit_stay
+    y_true = answer_stay
+    tn, fp, fn,tp = confusion_matrix(y_pred,y_true).ravel()
+    print(tp,tn,fn,fp)
     
     
     
