@@ -6,6 +6,19 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 import pandas as pd
 
+def replace(data):
+    can_id = ['340','2B0','4A4','164','260','251','140','130','153','220','7D8','7D0','7DC','7D4','7CC',
+              '7C4','57F','43','07F','5BE','4A2','4A7','53F','4A9','5CD','5B0','52A','5A6','53B','4CB','50E',
+              '412','410','48C','559','572','49F','44E','553','544','4C9','541','50A','483','500','495','479',
+              '50C','507','568','593','436','58B','48A','53E','42D','492','485','520','381','490','484','470',
+              '453','394','387','329','563','47F','260','220','153','2B0','251','4F1','391','389','421','420',
+              '38D','386','140','130','164','368','367','366','356']
+    for i in range(len(can_id)):
+        data = data.str.replace(pat=can_id[i],repl=str(i+1),regex=False)
+    data = pd.to_numeric(data)
+    
+    return data
+
 def load_data(DATA_PATH):
     print('[+] Start preprocession')
     
@@ -27,29 +40,16 @@ def load_data(DATA_PATH):
     submit_df_drive = dataframe_from_csvs(submit_drive)
     submit_df_stay = dataframe_from_csvs(submit_stay)
     
-    # print(train_df_drive.index)
-    # train_d_data, train_d_label
-    # train_d_data.index = train_df_drive['index_col']
-    # train_d_data = train_d_data.replace('Normal', '0')
-    # train_d_data = train_d_data.replace('Attack', '1')
-    # train_d_data = train_d_data.apply(pd.to_numeric)
+    train_d_data = train_df_drive.Arbitration_ID
+    train_d_data = replace(train_d_data)
+    train_s_data = train_df_stay.Arbitration_ID       
+    train_s_data = replace(train_s_data)
+    submit_d_data = submit_df_drive.Arbitration_ID
+    submit_d_data = replace(submit_d_data)
+    submit_s_data = submit_df_stay.Arbitration_ID
+    submit_s_data = replace(submit_s_data)
     
-    train_d_data = train_df_drive.Arbitration_ID.apply(lambda x: int(x,16))
-    # train_d_data = train_d_data_temp
-    
-    # train_s_data.index = train_df_stay['index_col']
-    # train_s_data = train_s_data.replace('Normal', '0')
-    # train_s_data = train_s_data.replace('Attack', '1')
-    # train_s_data = train_s_data.apply(pd.to_numeric)
-    
-    train_s_data = train_df_stay.Arbitration_ID.apply(lambda x: int(x,16))        
-    # train_s_data = train_s_data_temp
-    
-    submit_d_data = submit_df_drive.Arbitration_ID.apply(lambda x: int(x,16))
-    
-    submit_s_data = submit_df_stay.Arbitration_ID.apply(lambda x: int(x,16))
-    
-    return train_d_data[:1700000], train_s_data[:1700000], submit_d_data, submit_s_data
+    return train_d_data, train_s_data, submit_d_data, submit_s_data
 
 def preprocessing_data(dataset, start_index, end_index, history_size, target_size):
     data = []

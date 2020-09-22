@@ -14,32 +14,32 @@ import tensorflow as tf
 if __name__ == '__main__':
     
     DATA_PATH = './데이터셋'
-    EPOCH = 10
+    EPOCH = 5
     BATCH_SIZE = 2048
     BUFFER_SIZE = 10000
-    DRIVE_THRESHOLD = 783
-    STAY_THRESHOLD = 800
+    DRIVE_THRESHOLD = 1
+    STAY_THRESHOLD = 1
     past_history = 50
     future_target = 0
     TRAIN_SPLIT = 1500000
     EVALUATION_INTERVAL = 200
     # # preprocessing dataset
-    # train_d_data_, train_s_data_, submit_d_data_, submit_s_data_ = load_data(DATA_PATH)
+    train_d_data_, train_s_data_, submit_d_data_, submit_s_data_ = load_data(DATA_PATH)
     
     # # data save
     import pickle
-    # # save
-    # with open('train_d_data_.pkl','wb') as f:
-    #     pickle.dump(train_d_data_, f)
+    # save
+    with open('train_d_data_.pkl','wb') as f:
+        pickle.dump(train_d_data_, f)
         
-    # with open('train_s_data_.pkl','wb') as f:
-    #     pickle.dump(train_s_data_, f)
+    with open('train_s_data_.pkl','wb') as f:
+        pickle.dump(train_s_data_, f)
         
-    # with open('submit_d_data_.pkl','wb') as f:
-    #     pickle.dump(submit_d_data_, f)
+    with open('submit_d_data_.pkl','wb') as f:
+        pickle.dump(submit_d_data_, f)
     
-    # with open('submit_s_data_.pkl','wb') as f:
-    #     pickle.dump(submit_s_data_, f)
+    with open('submit_s_data_.pkl','wb') as f:
+        pickle.dump(submit_s_data_, f)
     
     # pickle load    
     with open('train_d_data_.pkl','rb') as f:
@@ -141,8 +141,8 @@ if __name__ == '__main__':
     stay_predict = stay_model.predict(submit_s_data)
     
     # change number to class_name
-    d_predict = number_to_class(drive_predict[:,0,0], DRIVE_THRESHOLD)
-    s_predict = number_to_class(stay_predict[:,0,0], STAY_THRESHOLD)
+    d_predict = number_to_class(drive_predict[:,0,0], submit_d_data_, DRIVE_THRESHOLD)
+    s_predict = number_to_class(stay_predict[:,0,0], submit_s_data_, STAY_THRESHOLD)
     
     # record
     print('[+] Record label')
@@ -152,12 +152,3 @@ if __name__ == '__main__':
     # score
     print('[+] score')
     scoring(DATA_PATH)
-    
-    
-    
-    
-    
-    
-    
-    
-    

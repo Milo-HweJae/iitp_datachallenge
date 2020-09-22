@@ -16,10 +16,11 @@ def dataframe_from_csvs(targets):
     # temp = pd.DataFrame(dataframe_from_csv)
     return pd.concat([dataframe_from_csv(x) for x in targets], ignore_index='True')
 
-def number_to_class(predict, threshold):
+def number_to_class(predict, data, threshold):
     label = []
     for i in range(len(predict)):
-        if predict[i] >= threshold:
+        loss = (predict[i] - data[i])**2
+        if loss < threshold:
             label.append('Normal')
         else:
             label.append('Attack')
@@ -31,17 +32,19 @@ def save_submission(DATA_PATH, pred, past_history, is_drive=True):
     submit_path = DATA_PATH + './제출용'
     
     if is_drive == True:
-        submit_drive = sorted([x for x in glob(submit_path + "./*D_pred*.csv")])
+        submit_drive = sorted([x for x in glob(submit_path + "./Cybersecurity_Car_Hacking_D_prediction.csv")])
         submit_df_drive = dataframe_from_csvs(submit_drive)
         for i in range(past_history):
-            submit_df_drive['Class'] = pred.insert(0,'Normal')
+            pred.insert(0,'Normal')
+        submit_df_drive['Class'] = pred
         submit_df_drive.to_csv(submit_path + "./submission_d.csv")
     
     else:
-        submit_stay = sorted([x for x in glob(submit_path + "./*S_pred*.csv")])
+        submit_stay = sorted([x for x in glob(submit_path + "./Cybersecurity_Car_Hacking_S_prediction.csv")])
         submit_df_stay = dataframe_from_csvs(submit_stay)
         for i in range(past_history):
-            submit_df_stay['Class'] = pred.insert(0,'Normal')
+            pred.insert(0,'Normal')
+        submit_df_stay['Class'] = pred
         submit_df_stay.to_csv(submit_path + "./submission_s.csv")
         
 def scoring(DATA_PATH):
@@ -49,8 +52,8 @@ def scoring(DATA_PATH):
     score_path = DATA_PATH + './답안지'
     submit_path = DATA_PATH + './제출용'
     
-    score_drive = sorted([x for x in glob(score_path + "./*D_pred*.csv")])
-    score_stay = sorted([x for x in glob(score_path + "./*S_pred*.csv")])
+    score_drive = sorted([x for x in glob(score_path + "./Answer_Cybersecurity_Car_Hacking_D_prediction_.csv")])
+    score_stay = sorted([x for x in glob(score_path + "./Answer_Cybersecurity_Car_Hacking_S_prediction_.csv")])
 
     submit_drive = sorted([x for x in glob(submit_path + "./submission_d.csv")])
     submit_stay = sorted([x for x in glob(submit_path + "./submission_s.csv")])
