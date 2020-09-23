@@ -5,6 +5,7 @@ from glob import glob
 from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 import pandas as pd
+from keras.utils import np_utils
 
 def replace(data):
     can_id = ['340','2B0','4A4','164','260','251','140','130','153','220','7D8','7D0','7DC','7D4','7CC',

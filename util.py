@@ -19,7 +19,8 @@ def dataframe_from_csvs(targets):
 def number_to_class(predict, data, threshold):
     label = []
     for i in range(len(predict)):
-        loss = (predict[i] - data[i])**2
+        # loss = (predict[i] - data[i])**2
+        loss = predict[i]
         if loss < threshold:
             label.append('Normal')
         else:
@@ -121,11 +122,11 @@ def scoring(DATA_PATH):
     
     y_pred = submit_drive
     y_true = answer_drive
-    tn, fp, fn,tp = confusion_matrix(y_pred,y_true).ravel()
+    tn, fp, fn,tp = confusion_matrix(y_true,y_pred).ravel()
     print(tp,tn,fn,fp)
     y_pred = submit_stay
     y_true = answer_stay
-    tn, fp, fn,tp = confusion_matrix(y_pred,y_true).ravel()
+    tn, fp, fn,tp = confusion_matrix(y_true,y_pred).ravel()
     print(tp,tn,fn,fp)
     
     
